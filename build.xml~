@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="SparkChargers" basedir="." default="build">
+
+    <target name="resolve" depends="init">
+		<ivy:retrieve pattern="${lib.dir}/[module]-[type]-[artifact]-[revision].[ext]" />
+	</target>
+	<target name="init">
+		<property name="lib.dir" location="${basedir}/lib" />
+		<property name="src.dir" location="${basedir}/src" />
+		<property name="generated.dir" location="${basedir}/generated" />
+		<property name="test.dir" location="${basedir}/test" />
+		<property name="build.dir" location="${basedir}/classes" />
+		<property name="config.dir" location="${basedir}/resources" />
+
+		<path id="project.classpath">
+			<pathelement location="${build.dir}" />
+			<fileset dir="${lib.dir}">
+				<include name="**/*.jar" />
+			</fileset>
+		</path>
+	</target>
+
+	<target name="clean" depends="init">
+		<delete dir="${build.dir}" />
+		<echo>Note: protobuf generated .java are not removed. Changes to data.proto require build_pb.sh</echo>
+	</target>
+	
+	<target name="build" depends="clean">
+		<mkdir dir="${build.dir}" />
+
+		<javac destdir="${build.dir}" debug="true" deprecation="true" optimize="false" failonerror="true">
+			<src path="${generated.dir}" />
+			<classpath refid="project.classpath" />
+		</javac>
+
+		<javac destdir="${build.dir}" debug="true" deprecation="false" optimize="false" failonerror="true">
+			<src path="${src.dir}" />
+			<classpath refid="project.classpath" />
+		</javac>
+	</target>
+	
+	<target name="server0" depends="build">
+		<java fork="yes" maxmemory="1024m" classname="nettyServer.Server">
+			
+			<classpath refid="project.classpath" />
+		</java>
+	</target>
+	<target name="p" depends="build">
+		<java fork="yes" maxmemory="1024m" classname="kafka.KafkaProducer">
+			
+			<classpath refid="project.classpath" />
+		</java>
+	</target>
+	<target name="c" depends="build">
+		<java fork="yes" maxmemory="1024m" classname="kafka.KafkaProducer">
+			
+			<classpath refid="project.classpath" />
+		</java>
+	</target>
+	</project>
+	
